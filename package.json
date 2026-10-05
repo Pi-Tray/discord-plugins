@@ -11,11 +11,11 @@
   "author": "obfuscatedgenerated",
   "license": "MIT",
   "devDependencies": {
-    "pi-tray-server": "github:pi-tray/server",
+    "pi-tray-server": "github:Pi-Tray/server",
     "typescript": "^5.9.2"
   },
   "dependencies": {
-    "koffi": "^3.3.2",
-    "discord-rpc": "^4.0.1"
+    "discord-rpc": "^4.0.1",
+    "koffi": "^3.3.2"
   }
 }

@@ -1,7 +1,7 @@
-import {define_plugin} from "pi-tray-server/src/types";
+import type {Plugin} from "pi-tray-server/src/types";
 import {load_impl} from "./impl";
 
-export default define_plugin({
+export default {
     display_name: "Show the number of Discord notifications",
     description: "Uses window title to count the number of Discord notifications.",
 
@@ -38,4 +38,4 @@ export default define_plugin({
             });
         }
     }
-});
+} satisfies Plugin;
