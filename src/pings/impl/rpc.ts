@@ -27,8 +27,13 @@ export type ForegroundWatcher = (on_discord_focus: (is_discord_focused: boolean)
 
 const redirectUri = "http://localhost";
 const scopes = ["rpc", "rpc.notifications.read"];
-const tokenPath = path.join(__dirname, "discord-token.json"); // TODO: move to appdata
 const reconnectDelayMs = 5000;
+
+let tokenPath: string | undefined = undefined;
+
+export const set_token_path = (path: string) => {
+    tokenPath = path;
+};
 
 /**
  * Builds the shared Discord RPC ping counter. Every platform behaves the same way: count up on each
@@ -36,6 +41,10 @@ const reconnectDelayMs = 5000;
  * so each platform just passes in its own {@link ForegroundWatcher}.
  */
 export const create_rpc_impl = (watch_foreground: ForegroundWatcher): Impl => {
+    if (!tokenPath) {
+        throw new Error("tokenPath must be set before creating the RPC impl");
+    }
+
     let clientId: string;
     let clientSecret: string;
 
@@ -54,14 +63,14 @@ export const create_rpc_impl = (watch_foreground: ForegroundWatcher): Impl => {
 
     const loadAccessToken = (): string | undefined => {
         try {
-            return JSON.parse(fs.readFileSync(tokenPath, "utf8")).accessToken;
+            return JSON.parse(fs.readFileSync(tokenPath!, "utf8")).accessToken;
         } catch {
             return undefined;
         }
     };
 
     const saveAccessToken = (accessToken: string) => {
-        fs.writeFileSync(tokenPath, JSON.stringify({accessToken}));
+        fs.writeFileSync(tokenPath!, JSON.stringify({accessToken}));
     };
 
     const connect = async (): Promise<void> => {
@@ -75,7 +84,7 @@ export const create_rpc_impl = (watch_foreground: ForegroundWatcher): Impl => {
             client.destroy().catch(() => {
             });
             if (savedToken) {
-                fs.rmSync(tokenPath, {force: true});
+                fs.rmSync(tokenPath!, {force: true});
                 return connect();
             }
             throw error;
