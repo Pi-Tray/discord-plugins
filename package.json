@@ -2,7 +2,6 @@
   "name": "@pi-tray/discord",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "tsc"
@@ -11,11 +10,18 @@
   "author": "obfuscatedgenerated",
   "license": "MIT",
   "devDependencies": {
+    "@pi-tray/plugin-build": "https://github.com/Pi-Tray/Pi-Tray/releases/download/plugin-build-v0.1.0-alpha.1/pi-tray-plugin-build-0.1.0-alpha.1.tgz",
+    "@pi-tray/types": "https://github.com/Pi-Tray/Pi-Tray/releases/download/types-v0.1.0-alpha/pi-tray-types-0.1.0-alpha.tgz",
     "@types/discord-rpc": "^4.0.11",
-    "pi-tray-server": "github:Pi-Tray/server",
+    "@types/node": "^24.2.1",
     "typescript": "^5.9.2"
   },
   "dependencies": {
     "discord-rpc": "^4.0.1"
+  },
+  "pi-tray": {
+    "external": [
+      "register-scheme"
+    ]
   }
 }

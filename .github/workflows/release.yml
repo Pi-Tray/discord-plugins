@@ -1,0 +1,16 @@
+name: Release
+
+# every push to main builds the plugin for each platform as a check,
+# and a v<version> tag matching package.json publishes a release with manifest.json
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    uses: Pi-Tray/Pi-Tray/.github/workflows/plugin-release.yml@plugin-build-v0.1.0-alpha.1

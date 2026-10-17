@@ -1,4 +1,4 @@
-import type {PluginConfig} from "pi-tray-server/src/types";
+import type {PluginConfig} from "@pi-tray/types";
 
 import RPC from "discord-rpc";
 import fs from "node:fs";

@@ -1,0 +1,17 @@
+name: Update Pi-Tray tools
+
+# opens a pull request when there's a newer @pi-tray/types or @pi-tray/plugin-build,
+# moving these workflows to the matching version too
+
+on:
+  schedule:
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  update:
+    uses: Pi-Tray/Pi-Tray/.github/workflows/plugin-update.yml@plugin-build-v0.1.0-alpha.1
