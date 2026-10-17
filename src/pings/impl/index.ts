@@ -1,11 +1,15 @@
 import * as os from "node:os";
 
-export const load_impl = async () => {
+import type {Impl} from "./rpc";
+
+export type {Impl};
+
+export const load_impl = async (): Promise<Impl> => {
     if (os.platform() === "win32") {
-        return (await import("./windows")).default;
+        return await import("./windows");
     } else if (os.platform() === "darwin") {
-        return (await import("./macos")).default;
+        return await import("./macos");
     } else {
-        return (await import("./linux")).default;
+        return await import("./linux");
     }
 }

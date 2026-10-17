@@ -3,13 +3,17 @@ import {load_impl} from "./impl";
 
 export default {
     display_name: "Show the number of Discord notifications",
-    description: "Uses window title to count the number of Discord notifications.",
+    description: "[Make a Discord application](https://discord.com/developers/applications) and add http://localhost as a redirect in OAuth.",
 
     config_template: {
-        interval_seconds: {
-            type: "number",
-            optional: true,
-            description: "How often to update (default: 2)"
+        client_id: {
+            type: "string",
+            description: "Client ID of the Discord application you made"
+        },
+        client_secret: {
+            type: "string",
+            hints: ["password"],
+            description: "Client secret of the Discord application you made"
         },
         label: {
             type: "string",
@@ -19,22 +23,21 @@ export default {
     },
 
     // TODO: push to open discord
-    // TODO: more robust if window not open
 
     live: {
         controls: ["label"],
 
         init({config, update, signal}) {
-            load_impl().then(get_ping_count => {
-                const interval_ms = Math.max(500, (config.interval_seconds ?? 2) * 1000);
-                const label = config.label ?? "Discord:";
+            load_impl().then(impl => {
+                impl.init(config);
 
-                const timer = setInterval(() => {
-                    update({text: `${label} ${get_ping_count()}`});
-                }, interval_ms);
+                const label = config.label ?? "Discord:";
+                impl.on_ping_count_change((count => {
+                    update({text: `${label} ${count}`});
+                }));
 
                 update({text: `${label} …`});
-                signal.addEventListener("abort", () => clearInterval(timer));
+                signal.addEventListener("abort", impl.teardown);
             });
         }
     }

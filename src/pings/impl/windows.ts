@@ -1,31 +1,35 @@
-import koffi from "koffi";
+import {spawn} from "node:child_process";
+import readline from "node:readline";
 
-const user32 = koffi.load("user32.dll");
+import {create_rpc_impl, ForegroundWatcher} from "./rpc";
 
-koffi.proto("bool __stdcall EnumWindowsProc(void* hwnd, void* lParam)");
+const discordProcessNames = new Set(["discord", "discordptb", "discordcanary"]);
 
-const EnumWindows = user32.func("bool __stdcall EnumWindows(EnumWindowsProc* func, void* lParam)");
-const GetWindowText = user32.func("int __stdcall GetWindowTextW(void* hwnd, _Out_ char16_t* lpString, int nMaxCount)");
+// polls the foreground window's process name and reports whether it belongs to Discord
+const watch_foreground: ForegroundWatcher = (on_discord_focus) => {
+    const script = `
+    Add-Type -Name Foreground -Namespace Win32 -MemberDefinition '
+      [DllImport("user32.dll")] public static extern IntPtr GetForegroundWindow();
+      [DllImport("user32.dll")] public static extern int GetWindowThreadProcessId(IntPtr hwnd, out int processId);
+    '
+    while ($true) {
+      $processId = 0
+      [void][Win32.Foreground]::GetWindowThreadProcessId([Win32.Foreground]::GetForegroundWindow(), [ref]$processId)
+      $processName = ""
+      try { $processName = (Get-Process -Id $processId -ErrorAction Stop).ProcessName } catch { }
+      [Console]::Out.WriteLine($processName)
+      [Console]::Out.Flush()
+      Start-Sleep -Milliseconds 1000
+    }
+  `;
 
-export default (): number => {
-    let ping_count = 0;
+    const watcher = spawn("powershell", ["-NoProfile", "-Command", script]);
+    readline.createInterface({input: watcher.stdout}).on("line", (line) => {
+        on_discord_focus(discordProcessNames.has(line.trim().toLowerCase()));
+    });
+    watcher.stderr.on("data", (data) => process.stderr.write(data));
 
-    const callback = (hwnd: any, lParam: any): boolean => {
-        const buffer = Buffer.alloc(512);
-        const length = GetWindowText(hwnd, buffer, 256);
-
-        if (length > 0) {
-            // convert utf16le buffer to string and check if it contains "Discord"
-            const title = buffer.toString("utf16le", 0, length * 2);
-            if (title.includes("Discord")) {
-                const match = title.trim().match(/^\((\d+)\)/);
-                if (match) ping_count = parseInt(match[1], 10);
-            }
-        }
-        return true;
-    };
-
-    EnumWindows(callback, null);
-
-    return ping_count;
+    return () => watcher.kill();
 };
+
+export const {init, teardown, on_ping_count_change} = create_rpc_impl(watch_foreground);

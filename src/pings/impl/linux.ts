@@ -1,19 +1,31 @@
-import { execSync } from "child_process";
+import {execFile} from "node:child_process";
 
-export default () => {
-    try {
-        // -l lists windows, -x includes the class name
-        const output = execSync("wmctrl -l -x", { encoding: "utf8" });
-        const lines = output.split("\n");
+import {create_rpc_impl, ForegroundWatcher} from "./rpc";
 
-        for (const line of lines) {
-            if (line.toLowerCase().includes("discord.discord")) {
-                const match = line.match(/\((\d+)\)/);
-                if (match) return parseInt(match[1], 10);
+const pollIntervalMs = 1000;
+
+// polls the active window's class via xdotool and reports whether it belongs to Discord
+const watch_foreground: ForegroundWatcher = (on_discord_focus) => {
+    let warned = false;
+
+    const poll = () => {
+        execFile("xdotool", ["getactivewindow", "getwindowclassname"], {encoding: "utf8"}, (error, stdout) => {
+            if (error) {
+                if (!warned) {
+                    warned = true;
+                    console.error("Make sure xdotool is installed (sudo apt install xdotool)");
+                }
+                return;
             }
-        }
-    } catch (e) {
-        console.error("Make sure wmctrl is installed (sudo apt install wmctrl)");
-    }
-    return 0;
-}
+            // class name is e.g. "discord" or "discord.Discord"
+            on_discord_focus(stdout.trim().toLowerCase().includes("discord"));
+        });
+    };
+
+    poll();
+    const timer = setInterval(poll, pollIntervalMs);
+
+    return () => clearInterval(timer);
+};
+
+export const {init, teardown, on_ping_count_change} = create_rpc_impl(watch_foreground);
