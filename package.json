@@ -11,7 +11,7 @@
   "license": "MIT",
   "devDependencies": {
     "@pi-tray/plugin-build": "https://github.com/Pi-Tray/Pi-Tray/releases/download/plugin-build-v0.1.0-alpha.3/pi-tray-plugin-build-0.1.0-alpha.3.tgz",
-    "@pi-tray/types": "https://github.com/Pi-Tray/Pi-Tray/releases/download/types-v0.2.0/pi-tray-types-0.2.0.tgz",
+    "@pi-tray/types": "https://github.com/Pi-Tray/Pi-Tray/releases/download/types-v0.3.0/pi-tray-types-0.3.0.tgz",
     "@types/discord-rpc": "^4.0.11",
     "@types/node": "^24.2.1",
     "typescript": "^5.9.2"
